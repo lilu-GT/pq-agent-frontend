@@ -142,6 +142,24 @@ if st.button("Invoke", type="primary"):
         with st.expander("Steps / Observability", expanded=False):
             st.text(data.get("steps_for_observability", ""))
 
+    if "timing_summary" in data:
+        timing = data.get("timing_summary", {})
+        with st.expander("Timing summary", expanded=False):
+            if not timing:
+                st.write("No timing information available.")
+            else:
+                st.write(f"🧠 Planner LLM: **{timing.get('planner_llm_ms', 0)/1000} s**")
+                st.write(f"✍️ Synthesis LLM: **{timing.get('synthesis_llm_ms', 0)/1000} s**")
+
+                tools = timing.get("tools_ms", {})
+                if tools:
+                    st.write("🔎 Tools:")
+                    for name, ms in tools.items():
+                        st.write(f"   • {name}: **{ms/1000} s**")
+
+                st.write("---")
+                st.write(f"⏱️ **Total: {timing.get('total_ms', 0)/1000} s**")
+
     if show_raw:
         with st.expander("Raw response JSON", expanded=False):
             st.code(holder.get("text", ""), language="json")
