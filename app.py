@@ -63,7 +63,8 @@ def invoke_agent(q: str, rid: str):
     if rid and len(rid) >= 33:
         payload["run_id"] = rid
 
-    r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=180)
+    r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=(10, 460))
+    
 
     return r.status_code, r.headers.get("content-type", ""), r.text
 
