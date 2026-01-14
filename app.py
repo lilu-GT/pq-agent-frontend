@@ -6,6 +6,7 @@ st.set_page_config(page_title="PQ Agent Demo")
 LAMBDA_URL = st.secrets["LAMBDA_URL"]
 SHARED_SECRET = st.secrets.get("SHARED_SECRET", "")
 INTERFACE_TYPE = st.secrets.get("INTERFACE_TYPE", "CHAT")
+ENV = st.secrets.get("SSL_VERIFY", "true")
 
 # Render the appropriate interface based on INTERFACE_TYPE
 if INTERFACE_TYPE == "QUESTION":
