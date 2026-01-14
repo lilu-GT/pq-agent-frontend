@@ -4,7 +4,6 @@ import streamlit as st
 import time
 import threading
 
-
 def render(LAMBDA_URL: str, SHARED_SECRET: str):
     """Render the chat interface"""
     
@@ -41,6 +40,14 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             value=st.session_state.show_run_id
         )
         
+        st.write("**User Profile**")
+        st.selectbox(
+            "Select user profile", 
+            options=[{"label": "Public User", "value": "abc-123"}, {"label": "Agency User", "value": "def-456"}],
+            format_func=lambda x: x["label"],
+            key="select_user_profile",
+        )
+
         st.markdown("---")
         
         st.write("**Session Management**")
@@ -109,7 +116,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                     if rid:
                         payload["run_id"] = rid
                     
-                    r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=180, verify=False)
+                    r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=180, verify=st.secrets.get("SSL_VERIFY", "true").lower() == "true")
                     return r.status_code, r.headers.get("content-type", ""), r.text
                 
                 def _invoke_worker(result_holder: dict, query: str, run_id: str):
