@@ -4,6 +4,19 @@ import streamlit as st
 import time
 import threading
 
+USER_PROFILES = {
+    "public": {
+        "id": "2d7adb4a-793c-4d24-85e9-a26a4c929156",
+        "name": "Public User"
+    },
+    "agency": {
+        "id": "f0369d56-40df-4a11-8edb-268ca7940228",
+        "name": "Agency User"
+    }
+}
+
+SELECTBOX_OPTIONS = [{"label": x.get("name"), "value": x.get("id")} for x in USER_PROFILES.values()]
+
 def render(LAMBDA_URL: str, SHARED_SECRET: str):
     """Render the chat interface"""
     
@@ -50,7 +63,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
         st.write("**User Profile**")
         st.selectbox(
             "Select user profile", 
-            options=[{"label": "Public User", "value": "abc-123"}, {"label": "Agency User", "value": "def-456"}],
+            options=SELECTBOX_OPTIONS,
             format_func=lambda x: x["label"],
             key="select_user_profile",
             label_visibility="collapsed",
@@ -118,6 +131,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                     payload = {"query": q}
                     if rid:
                         payload["run_id"] = rid
+                    payload["user_profile_id"] = st.session_state.get("select_user_profile", {}).get("value", "")
                     
                     r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=180, verify=st.secrets.get("SSL_VERIFY", "true").lower() == "true")
                     return r.status_code, r.headers.get("content-type", ""), r.text
