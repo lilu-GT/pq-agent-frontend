@@ -24,6 +24,8 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
     
     # Sidebar configuration
     with st.sidebar:
+        st.markdown("**Parliamentary QA Agent**")
+
         if st.button("New Chat",  icon=":material/add_comment:",use_container_width=True):
             st.session_state.messages = []
             st.session_state.chat_run_id = str(uuid.uuid4())
