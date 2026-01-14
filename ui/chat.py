@@ -15,11 +15,36 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
     if "chat_run_id" not in st.session_state:
         st.session_state.chat_run_id = str(uuid.uuid4())
     
-    # Configuration options
-    col1, col2 = st.columns([3, 1])
+    # Initialize settings in session state
+    if "show_timing" not in st.session_state:
+        st.session_state.show_timing = True
+    if "show_steps" not in st.session_state:
+        st.session_state.show_steps = True
+    if "show_run_id" not in st.session_state:
+        st.session_state.show_run_id = True
+    
+    # Settings menu in top left
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
-        st.write(f"**Session ID:** `{st.session_state.chat_run_id}`")
+        with st.popover("⚙️ Settings"):
+            st.write("**Display Options**")
+            st.session_state.show_timing = st.checkbox(
+                "Show timing details", 
+                value=st.session_state.show_timing
+            )
+            st.session_state.show_steps = st.checkbox(
+                "Show observability steps", 
+                value=st.session_state.show_steps
+            )
+            st.session_state.show_run_id = st.checkbox(
+                "Show run IDs", 
+                value=st.session_state.show_run_id
+            )
+    
     with col2:
+        st.write(f"**Session ID:** `{st.session_state.chat_run_id}`")
+    
+    with col3:
         if st.button("New Session"):
             st.session_state.messages = []
             st.session_state.chat_run_id = str(uuid.uuid4())
@@ -36,11 +61,11 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             if message["role"] == "assistant" and "metadata" in message:
                 metadata = message["metadata"]
                 
-                if "run_id" in metadata:
+                if st.session_state.show_run_id and "run_id" in metadata:
                     st.caption(f"run_id: `{metadata['run_id']}`")
                 
                 # Show timing summary if available
-                if "timing_summary" in metadata:
+                if st.session_state.show_timing and "timing_summary" in metadata:
                     timing = metadata["timing_summary"]
                     with st.expander("Timing details", expanded=False):
                         st.write(f"🧠 Planner LLM: **{timing.get('planner_llm_ms', 0)/1000} s**")
@@ -56,7 +81,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                         st.write(f"⏱️ **Total: {timing.get('total_ms', 0)/1000} s**")
                 
                 # Show steps if available
-                if "steps_for_observability" in metadata:
+                if st.session_state.show_steps and "steps_for_observability" in metadata:
                     with st.expander("Steps / Observability", expanded=False):
                         st.text(metadata["steps_for_observability"])
     
@@ -160,11 +185,11 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                     st.session_state.messages.append(message_data)
                     
                     # Display metadata
-                    if data.get("run_id"):
+                    if st.session_state.show_run_id and data.get("run_id"):
                         st.caption(f"run_id: `{data.get('run_id')}`")
                     
                     # Show timing
-                    if "timing_summary" in data:
+                    if st.session_state.show_timing and "timing_summary" in data:
                         timing = data["timing_summary"]
                         with st.expander("Timing details", expanded=False):
                             st.write(f"🧠 Planner LLM: **{timing.get('planner_llm_ms', 0)/1000} s**")
@@ -180,6 +205,6 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                             st.write(f"⏱️ **Total: {timing.get('total_ms', 0)/1000} s**")
                     
                     # Show steps
-                    if "steps_for_observability" in data:
+                    if st.session_state.show_steps and "steps_for_observability" in data:
                         with st.expander("Steps / Observability", expanded=False):
                             st.text(data["steps_for_observability"])

@@ -1,7 +1,7 @@
 import streamlit as st
 from ui import question, chat
 
-st.set_page_config(page_title="PQ Agent Demo", menu_items={})
+st.set_page_config(page_title="PQ Agent Demo")
 st.title("Parliamentary QA Agent")
 
 LAMBDA_URL = st.secrets["LAMBDA_URL"]
