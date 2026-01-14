@@ -17,6 +17,10 @@ USER_PROFILES = {
 
 SELECTBOX_OPTIONS = [{"label": x.get("name"), "value": x.get("id")} for x in USER_PROFILES.values()]
 
+def __reset_page():
+    st.session_state.messages = []
+    st.session_state.chat_run_id = str(uuid.uuid4())
+
 def render(LAMBDA_URL: str, SHARED_SECRET: str):
     """Render the chat interface"""
     
@@ -40,9 +44,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
         st.markdown("**Parliamentary QA Agent**")
 
         if st.button("New Chat",  icon=":material/add_comment:",use_container_width=True):
-            st.session_state.messages = []
-            st.session_state.chat_run_id = str(uuid.uuid4())
-            st.rerun()
+            __reset_page()
 
         st.header("Settings")
         
@@ -67,6 +69,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             format_func=lambda x: x["label"],
             key="select_user_profile",
             label_visibility="collapsed",
+            on_change=__reset_page
         )
 
         st.markdown("---")
