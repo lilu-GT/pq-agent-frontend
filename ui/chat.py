@@ -24,6 +24,11 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
     
     # Sidebar configuration
     with st.sidebar:
+        if st.button("New Chat",  icon=":material/add_comment:",use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.chat_run_id = str(uuid.uuid4())
+            st.rerun()
+
         st.header("Settings")
         
         st.write("**Display Options**")
@@ -46,17 +51,13 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             options=[{"label": "Public User", "value": "abc-123"}, {"label": "Agency User", "value": "def-456"}],
             format_func=lambda x: x["label"],
             key="select_user_profile",
+            label_visibility="collapsed",
         )
 
         st.markdown("---")
         
         st.write("**Session Management**")
         st.write(f"Session ID: `{st.session_state.chat_run_id}`")
-        
-        if st.button("New Session", use_container_width=True):
-            st.session_state.messages = []
-            st.session_state.chat_run_id = str(uuid.uuid4())
-            st.rerun()
     
     # Display chat messages
     for message in st.session_state.messages:
