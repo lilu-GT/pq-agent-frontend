@@ -7,7 +7,8 @@ import threading
 
 def render(LAMBDA_URL: str, SHARED_SECRET: str):
     """Render the Parliamentary Question interface"""
-    
+    st.title("Parliamentary QA Agent")
+
     st.text(
         "An agentic QA prototype to answer Singapore Parliamentary Questions.\n"
         "It analyses the question, plans tool usage, retrieves relevant information from multiple sources, "

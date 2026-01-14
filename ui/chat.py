@@ -23,34 +23,33 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
     if "show_run_id" not in st.session_state:
         st.session_state.show_run_id = True
     
-    # Settings menu in top left
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col1:
-        with st.popover("⚙️ Settings"):
-            st.write("**Display Options**")
-            st.session_state.show_timing = st.checkbox(
-                "Show timing details", 
-                value=st.session_state.show_timing
-            )
-            st.session_state.show_steps = st.checkbox(
-                "Show observability steps", 
-                value=st.session_state.show_steps
-            )
-            st.session_state.show_run_id = st.checkbox(
-                "Show run IDs", 
-                value=st.session_state.show_run_id
-            )
-    
-    with col2:
-        st.write(f"**Session ID:** `{st.session_state.chat_run_id}`")
-    
-    with col3:
-        if st.button("New Session"):
+    # Sidebar configuration
+    with st.sidebar:
+        st.header("Settings")
+        
+        st.write("**Display Options**")
+        st.session_state.show_timing = st.checkbox(
+            "Show timing details", 
+            value=st.session_state.show_timing
+        )
+        st.session_state.show_steps = st.checkbox(
+            "Show observability steps", 
+            value=st.session_state.show_steps
+        )
+        st.session_state.show_run_id = st.checkbox(
+            "Show run IDs", 
+            value=st.session_state.show_run_id
+        )
+        
+        st.markdown("---")
+        
+        st.write("**Session Management**")
+        st.write(f"Session ID: `{st.session_state.chat_run_id}`")
+        
+        if st.button("New Session", use_container_width=True):
             st.session_state.messages = []
             st.session_state.chat_run_id = str(uuid.uuid4())
             st.rerun()
-    
-    st.markdown("---")
     
     # Display chat messages
     for message in st.session_state.messages:
@@ -84,7 +83,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                 if st.session_state.show_steps and "steps_for_observability" in metadata:
                     with st.expander("Steps / Observability", expanded=False):
                         st.text(metadata["steps_for_observability"])
-    
+
     # Chat input
     if prompt := st.chat_input("Ask a question about Parliamentary matters..."):
         # Add user message to chat history
