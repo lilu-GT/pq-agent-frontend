@@ -39,12 +39,13 @@ def __reset_page():
 def render(LAMBDA_URL: str, SHARED_SECRET: str):
     """Render the chat interface"""
     
+    # Initialize chat_run_id FIRST before anything else
+    if "chat_run_id" not in st.session_state:
+        st.session_state.chat_run_id = str(uuid.uuid4())
+    
     # Initialize chat history in session state
     if "messages" not in st.session_state:
         st.session_state.messages = []
-    
-    if "chat_run_id" not in st.session_state:
-        st.session_state.chat_run_id = str(uuid.uuid4())
     
     # Initialize settings in session state
     if "show_timing" not in st.session_state:
@@ -139,9 +140,18 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             message_placeholder = st.empty()
             status_placeholder = st.empty()
             
+            # Capture session state values before threading
+            session_id = st.session_state.chat_run_id
+            selected_profile_id = st.session_state.get("select_user_profile", {}).get("value", "")
+            username = ""
+            for profile in USER_PROFILES.values():
+                if profile["id"] == selected_profile_id:
+                    username = profile["name"]
+                    break
+            
             # Show loading status
             with status_placeholder.status("Agent is thinking...", expanded=True) as status:
-                def invoke_agent(q: str, rid: str):
+                def invoke_agent(q: str, rid: str, sess_id: str, user_name: str):
                     headers = {"Content-Type": "application/json"}
                     if SHARED_SECRET:
                         headers["x-shared-secret"] = SHARED_SECRET
@@ -149,23 +159,15 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                     payload = {"query": q}
                     if rid:
                         payload["run_id"] = rid
-                    payload["session_id"] = st.session_state.chat_run_id
-                    
-                    # Get the username from the selected profile
-                    selected_profile_id = st.session_state.get("select_user_profile", {}).get("value", "")
-                    username = ""
-                    for profile in USER_PROFILES.values():
-                        if profile["id"] == selected_profile_id:
-                            username = profile["name"]
-                            break
-                    payload["username"] = username
+                    payload["session_id"] = sess_id
+                    payload["username"] = user_name
                     
                     r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=460, verify=st.secrets.get("SSL_VERIFY", "true").lower() == "true")
                     return r.status_code, r.headers.get("content-type", ""), r.text
                 
-                def _invoke_worker(result_holder: dict, query: str, run_id: str):
+                def _invoke_worker(result_holder: dict, query: str, run_id: str, sess_id: str, user_name: str):
                     try:
-                        code, content_type, text = invoke_agent(query, run_id)
+                        code, content_type, text = invoke_agent(query, run_id, sess_id, user_name)
                         result_holder["ok"] = True
                         result_holder["text"] = text
                     except Exception as e:
@@ -177,7 +179,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                 
                 t = threading.Thread(
                     target=_invoke_worker,
-                    args=(holder, prompt, run_id),
+                    args=(holder, prompt, run_id, session_id, username),
                     daemon=True,
                 )
                 t.start()
