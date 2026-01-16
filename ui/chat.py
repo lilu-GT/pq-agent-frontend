@@ -17,6 +17,21 @@ USER_PROFILES = {
 
 SELECTBOX_OPTIONS = [{"label": x.get("name"), "value": x.get("id")} for x in USER_PROFILES.values()]
 
+STEPS = [
+    "🤖 Analysing the Parliamentary Question",
+    "🧠 Planning next actions (planner)",
+    "🔎 Calling tools to retrieve supporting information",
+    "🧩 Consolidating evidence across sources",
+    "🧠 Planning next actions (planner)",
+    "🔎 Calling tools to retrieve supporting information",
+    "🧩 Consolidating evidence across sources",
+    "🧠 Planning next actions (planner)",
+    "🔎 Calling tools to retrieve supporting information",
+    "🧩 Consolidating evidence across sources",
+    "✍️ Writing a Ministerial-style draft reply",
+]
+STEP_INTERVAL_S = 5
+
 def __reset_page():
     st.session_state.messages = []
     st.session_state.chat_run_id = str(uuid.uuid4())
@@ -125,7 +140,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             status_placeholder = st.empty()
             
             # Show loading status
-            with status_placeholder.status("Agent is thinking...", expanded=False) as status:
+            with status_placeholder.status("Agent is thinking...", expanded=True) as status:
                 def invoke_agent(q: str, rid: str):
                     headers = {"Content-Type": "application/json"}
                     if SHARED_SECRET:
@@ -158,10 +173,23 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                 )
                 t.start()
                 
-                # Wait for completion
+                # Wait for completion while showing mock progress steps
+                start_ts = time.time()
+                shown = 0
+                show_mock_steps = True
                 while t.is_alive():
+                    if show_mock_steps:
+                        elapsed = time.time() - start_ts
+                        # how many steps should be shown by now
+                        target = min(int(elapsed // STEP_INTERVAL_S) + 1, len(STEPS))
+
+                        # write newly reached steps
+                        while shown < target:
+                            status.write(STEPS[shown])
+                            shown += 1
+
                     time.sleep(0.3)
-                
+
                 status.update(label="Completed", state="complete")
             
             status_placeholder.empty()
