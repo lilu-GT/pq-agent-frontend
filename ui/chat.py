@@ -151,7 +151,7 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
                         payload["run_id"] = rid
                     payload["user_profile_id"] = st.session_state.get("select_user_profile", {}).get("value", "")
                     
-                    r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=180, verify=st.secrets.get("SSL_VERIFY", "true").lower() == "true")
+                    r = requests.post(LAMBDA_URL, headers=headers, json=payload, timeout=460, verify=st.secrets.get("SSL_VERIFY", "true").lower() == "true")
                     return r.status_code, r.headers.get("content-type", ""), r.text
                 
                 def _invoke_worker(result_holder: dict, query: str, run_id: str):
