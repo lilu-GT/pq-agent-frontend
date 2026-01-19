@@ -54,6 +54,8 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
         st.session_state.show_steps = True
     if "show_run_id" not in st.session_state:
         st.session_state.show_run_id = True
+    if "select_user_profile" not in st.session_state:
+        st.session_state.select_user_profile = SELECTBOX_OPTIONS[0]
     
     # Sidebar configuration
     with st.sidebar:
@@ -142,12 +144,20 @@ def render(LAMBDA_URL: str, SHARED_SECRET: str):
             
             # Capture session state values before threading
             session_id = st.session_state.chat_run_id
-            selected_profile_id = st.session_state.get("select_user_profile", {}).get("value", "")
+            selected_profile = st.session_state.get("select_user_profile")
+            selected_profile_id = selected_profile.get("value", "") if selected_profile else ""
+            
+            # Extract username from profile ID
             username = ""
-            for profile in USER_PROFILES.values():
-                if profile["id"] == selected_profile_id:
-                    username = profile["name"]
-                    break
+            if selected_profile_id:
+                for profile in USER_PROFILES.values():
+                    if profile["id"] == selected_profile_id:
+                        username = profile["name"]
+                        break
+            
+            # Fallback to first profile if no username found
+            if not username:
+                username = list(USER_PROFILES.values())[0]["name"]
             
             # Show loading status
             with status_placeholder.status("Agent is thinking...", expanded=True) as status:
